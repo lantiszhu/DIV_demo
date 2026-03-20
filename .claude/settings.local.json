@@ -1,7 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npx http-server:*)"
+      "Bash(npx http-server:*)",
+      "Bash(cp \"d:/Document/血管卫士：生死时速/deploy/index.html\" \"d:/Document/血管卫士：生死时速/\")",
+      "Bash(cp \"d:/Document/血管卫士：生死时速/deploy/style.css\" \"d:/Document/血管卫士：生死时速/\")",
+      "Bash(cp \"d:/Document/血管卫士：生死时速/deploy/game.js\" \"d:/Document/血管卫士：生死时速/\")",
+      "Bash(grep -E '\\\\.\\(html|css|js|json\\)$')"
     ]
   }
 }
