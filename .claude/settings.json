@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cat -n \"DVT诊疗小游戏\"*\".txt\")",
+      "Bash(python -c \":*)",
+      "Bash(powershell -Command 'Add-Type -AssemblyName System.Drawing; $img = [System.Drawing.Image]::FromFile\\(\"\"h:\\\\工作文档\\\\2020_应用\\\\00现有产品\\\\0_AI\\\\医疗游戏\\\\血管卫士：生死时速\\\\assets\\\\IL-01.png\"\"\\); Write-Host \\($img.Width.ToString\\(\\) + \"\"x\"\" + $img.Height.ToString\\(\\)\\); $img.Dispose\\(\\)')",
+      "Bash(git --version)"
+    ],
+    "additionalDirectories": [
+      "h:\\工作文档\\2020_应用\\00现有产品\\0_AI\\医疗游戏\\血管卫士：生死时速\\assets"
+    ]
+  }
+}

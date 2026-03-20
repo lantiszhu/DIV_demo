@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>血管卫士：生死时速</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+
+<!-- P1 - 主页 -->
+<section id="page-home" class="page active">
+  <div class="page-bg bg-home"></div>
+  <div class="page-content home-content">
+    <div class="logo-area">
+      <div class="logo-icon">🛡️</div>
+      <h1 class="logo-title">血管卫士</h1>
+      <p class="logo-subtitle">生死时速</p>
+    </div>
+    <div class="character-area">
+      <img src="../assets/CH-01.png" alt="医生" class="doctor-full">
+    </div>
+    <div class="btn-group">
+      <button class="btn btn-primary" onclick="Game.goTo('page-intro')">开始游戏</button>
+      <button class="btn btn-secondary" onclick="Game.goTo('page-records')">得分记录</button>
+    </div>
+  </div>
+</section>
+
+<!-- PR - 得分记录页 -->
+<section id="page-records" class="page">
+  <div class="page-bg bg-game"></div>
+  <div class="page-content">
+    <div class="nav-bar">
+      <button class="nav-back" onclick="Game.goTo('page-home')">← 返回</button>
+      <span class="nav-title">挑战记录</span>
+      <span></span>
+    </div>
+    <div class="records-list" id="records-list">
+      <div class="empty-records">暂无挑战记录</div>
+    </div>
+  </div>
+</section>
+
+<!-- PF - 游戏失败页 -->
+<section id="page-fail" class="page">
+  <div class="page-bg bg-fail"></div>
+  <div class="page-content fail-content">
+    <div class="fail-icon">✕</div>
+    <h2 class="fail-title">游戏失败</h2>
+    <p class="fail-level" id="fail-level">失败于：Level 1</p>
+    <p class="fail-text">你的得分已降至0分，挑战失败。</p>
+    <div class="fail-reason" id="fail-reason"></div>
+    <div class="deduction-card" id="fail-deductions"></div>
+    <button class="btn btn-danger" onclick="Game.failConfirm()">确 认</button>
+  </div>
+</section>
+
+<!-- P2 - 角色介绍与姓名输入页 -->
+<section id="page-intro" class="page">
+  <div class="page-bg bg-game"></div>
+  <div class="page-content">
+    <div class="status-bar">
+      <span></span>
+      <span class="score-display">💠 <span id="intro-score">100</span>分</span>
+    </div>
+    <div class="intro-avatar">
+      <img src="../assets/CH-02.png" alt="医生头像" class="avatar-img">
+    </div>
+    <div class="card narration-card">
+      <p>你是骨科新入职的住院医师。今天你将负责照护新入院的张大爷，68岁，因右侧下肢肿胀、疼痛入院，需接受进一步检查和治疗。</p>
+      <p class="text-highlight">请时刻警惕深静脉血栓（DVT）的风险！</p>
+      <p>现在请告诉我你的姓名：</p>
+    </div>
+    <div class="input-area">
+      <input type="text" id="player-name" class="name-input" placeholder="请输入你的姓名（1-10个字符）" maxlength="10">
+    </div>
+    <button class="btn btn-primary" id="btn-ready" onclick="Game.startGame()" disabled>准备就绪</button>
+  </div>
+</section>
+
+<!-- P3 - Level 1：隐患侦探 -->
+<section id="page-level1" class="page">
+  <div class="page-bg bg-game"></div>
+  <div class="page-content level1-content">
+    <div class="status-bar">
+      <span class="level-title">Level 1：隐患侦探</span>
+      <span class="status-right">
+        <span class="score-display">💠 <span id="l1-score">100</span>分</span>
+        <span class="timer-display">⏱ <span id="l1-timer">30</span>s</span>
+      </span>
+    </div>
+    <div class="narration-bar">
+      <p class="narration-text">张大爷因右腿肿痛刚入院不久，你来到他的病房查房。眼前的场景让你警觉——请在30秒内点击画面中不正确的行为（共3处）。</p>
+      <span class="progress-badge">已发现 <span id="l1-found">0</span>/3</span>
+    </div>
+    <div class="scene-container" id="scene-level1">
+      <img src="../assets/IL-01.png" alt="病房场景" class="scene-img" id="scene-img-l1">
+      <!-- Clickable hotspots overlaid on the image -->
+      <div class="hotspot" data-hazard="A" id="hotspot-a" title="枕头垫在腘窝下"></div>
+      <div class="hotspot" data-hazard="B" id="hotspot-b" title="患者盘腿坐"></div>
+      <div class="hotspot" data-hazard="C" id="hotspot-c" title="家属揉腿"></div>
+      <div class="hotspot hotspot-distract" data-distract="水杯" id="hotspot-d1"></div>
+      <div class="hotspot hotspot-distract" data-distract="输液架" id="hotspot-d2"></div>
+      <div class="hotspot hotspot-distract" data-distract="床栏" id="hotspot-d3"></div>
+      <div class="hotspot hotspot-distract" data-distract="窗户" id="hotspot-d4"></div>
+      <!-- Found markers -->
+      <div class="found-marker" id="marker-a" style="display:none">✓</div>
+      <div class="found-marker" id="marker-b" style="display:none">✓</div>
+      <div class="found-marker" id="marker-c" style="display:none">✓</div>
+    </div>
+    <!-- Toast for wrong clicks -->
+    <div class="toast" id="l1-toast" style="display:none"></div>
+  </div>
+
+  <!-- P3a - 隐患A弹窗 -->
+  <div class="modal-overlay" id="modal-hazard-a" style="display:none">
+    <div class="modal-card">
+      <h3 class="modal-title">发现隐患！</h3>
+      <p class="modal-subtitle">枕头垫在腘窝下 — 请选择该行为危险的原因（多选）</p>
+      <div class="checkbox-group" id="quiz-a-options">
+        <label class="checkbox-item"><input type="checkbox" value="A"> A. 压迫腘静脉，阻碍下肢血液回流</label>
+        <label class="checkbox-item"><input type="checkbox" value="B"> B. 会导致下肢肌肉萎缩无力</label>
+        <label class="checkbox-item"><input type="checkbox" value="C"> C. 增加下肢深静脉血栓形成风险</label>
+        <label class="checkbox-item"><input type="checkbox" value="D"> D. 会直接引起皮肤压疮感染</label>
+        <label class="checkbox-item"><input type="checkbox" value="E"> E. 导致静脉血流淤滞，符合Virchow三联征</label>
+      </div>
+      <button class="btn btn-primary modal-btn" onclick="Level1.submitQuiz('A')">提 交</button>
+      <div class="quiz-result" id="quiz-a-result" style="display:none">
+        <div class="result-marks" id="quiz-a-marks"></div>
+        <p class="result-explain">枕头垫在腘窝下会压迫腘静脉，导致血液回流受阻，增加DVT风险。正确做法是将枕头垫在小腿下方，使膝关节自然微屈。</p>
+        <button class="btn btn-primary modal-btn" onclick="Level1.closeQuiz('A')">知道了</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- P3b - 隐患B弹窗 -->
+  <div class="modal-overlay" id="modal-hazard-b" style="display:none">
+    <div class="modal-card">
+      <h3 class="modal-title">发现隐患！</h3>
+      <p class="modal-subtitle">患者长时间盘腿坐 — 请选择该行为危险的原因（多选）</p>
+      <div class="checkbox-group" id="quiz-b-options">
+        <label class="checkbox-item"><input type="checkbox" value="A"> A. 会直接损伤膝关节半月板</label>
+        <label class="checkbox-item"><input type="checkbox" value="B"> B. 压迫下肢血管，减缓静脉血流速度</label>
+        <label class="checkbox-item"><input type="checkbox" value="C"> C. 增加血液淤滞，促进血栓形成</label>
+        <label class="checkbox-item"><input type="checkbox" value="D"> D. 容易引起腰椎间盘突出</label>
+        <label class="checkbox-item"><input type="checkbox" value="E"> E. 长时间同一体位会加重下肢静脉血液淤滞</label>
+      </div>
+      <button class="btn btn-primary modal-btn" onclick="Level1.submitQuiz('B')">提 交</button>
+      <div class="quiz-result" id="quiz-b-result" style="display:none">
+        <div class="result-marks" id="quiz-b-marks"></div>
+        <p class="result-explain">长时间盘腿坐会压迫下肢血管，减缓静脉血流速度，是DVT的重要诱因。疑似DVT患者应避免长时间保持同一姿势，鼓励适当活动踝关节促进血液回流。</p>
+        <button class="btn btn-primary modal-btn" onclick="Level1.closeQuiz('B')">知道了</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- P3c - 隐患C弹窗 -->
+  <div class="modal-overlay" id="modal-hazard-c" style="display:none">
+    <div class="modal-card">
+      <h3 class="modal-title">发现隐患！</h3>
+      <p class="modal-subtitle">家属在用力揉腿 — 请选择该行为危险的原因（多选）</p>
+      <div class="checkbox-group" id="quiz-c-options">
+        <label class="checkbox-item"><input type="checkbox" value="A"> A. 可能导致已形成的血栓脱落</label>
+        <label class="checkbox-item"><input type="checkbox" value="B"> B. 揉腿会导致肌肉纤维撕裂</label>
+        <label class="checkbox-item"><input type="checkbox" value="C"> C. 疑似DVT患肢应严禁按摩揉捏</label>
+        <label class="checkbox-item"><input type="checkbox" value="D"> D. 血栓脱落可经血液循环引发致命性肺栓塞</label>
+        <label class="checkbox-item"><input type="checkbox" value="E"> E. 按摩会升高血压引起脑出血</label>
+      </div>
+      <button class="btn btn-primary modal-btn" onclick="Level1.submitQuiz('C')">提 交</button>
+      <div class="quiz-result" id="quiz-c-result" style="display:none">
+        <div class="result-marks" id="quiz-c-marks"></div>
+        <p class="result-explain">对疑似DVT的患肢用力按摩揉捏，可能导致血栓脱落，经血液循环堵塞肺动脉，引发致命性肺栓塞（PE）！应严禁按摩患肢，并及时告知家属。</p>
+        <button class="btn btn-primary modal-btn" onclick="Level1.closeQuiz('C')">知道了</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- P4 - Level 1 结算页 -->
+<section id="page-settle1" class="page">
+  <div class="page-bg bg-game"></div>
+  <div class="page-content settle-content">
+    <h2 class="settle-title success">Level 1 通关！</h2>
+    <div class="deduction-card" id="settle1-deductions"></div>
+    <div class="card knowledge-card">
+      <h4>📖 知识小结</h4>
+      <p>DVT三大诱因（Virchow三联征）：血流缓慢、静脉壁损伤、血液高凝状态。护理中应避免一切可能导致静脉回流受阻的行为。</p>
+    </div>
+    <button class="btn btn-primary" onclick="Game.goTo('page-level2')">进入下一关</button>
+  </div>
+</section>
+
+<!-- P5 - Level 2：决策时刻 -->
+<section id="page-level2" class="page">
+  <div class="page-bg bg-game"></div>
+  <div class="page-content">
+    <div class="status-bar">
+      <span class="level-title">Level 2：决策时刻</span>
+      <span class="score-display">💠 <span id="l2-score">100</span>分</span>
+    </div>
+    <div class="scene-container scene-l2">
+      <img src="../assets/IL-02.png" alt="医生办公室" class="scene-img">
+    </div>
+    <div class="card narration-card">
+      <p>你为张大爷安排了相关检查。结果回报——<strong>D-二聚体明显升高，Wells评分2分（中度可能）</strong>。下一步该怎么办？</p>
+    </div>
+    <div class="choice-group" id="l2-choices">
+      <button class="btn btn-choice" data-choice="A" onclick="Level2.choose('A')">A. 立即行静脉造影</button>
+      <button class="btn btn-choice" data-choice="B" onclick="Level2.choose('B')">B. 先做下肢静脉超声</button>
+      <button class="btn btn-choice" data-choice="C" onclick="Level2.choose('C')">C. 直接开始抗凝治疗</button>
+      <button class="btn btn-choice" data-choice="D" onclick="Level2.choose('D')">D. 让病人下地活动活动</button>
+    </div>
+    <!-- Feedback toast -->
+    <div class="feedback-overlay" id="l2-feedback" style="display:none">
+      <div class="feedback-card" id="l2-feedback-card">
+        <p id="l2-feedback-text"></p>
+        <button class="btn btn-primary" id="l2-feedback-btn" onclick="Level2.closeFeedback()">继续</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- P6 - Level 2 正确反馈页 -->
+<section id="page-l2correct" class="page">
+  <div class="page-bg bg-game"></div>
+  <div class="page-content settle-content">
+    <div class="success-icon">✓</div>
+    <h2 class="settle-title success">判断正确！</h2>
+    <div class="card narration-card">
+      <p>D-二聚体升高+Wells评分中度可能，应首选无创的下肢静脉加压超声检查（CUS）。超声可明确是否存在血栓，避免有创检查的风险，也不应在未确诊的情况下盲目抗凝。</p>
+      <p class="text-highlight">超声结果：右侧股静脉血栓形成！</p>
+    </div>
+    <button class="btn btn-primary" onclick="Game.goTo('page-settle2')">继 续</button>
+  </div>
+</section>
+
+<!-- P7 - Level 2 结算页 -->
+<section id="page-settle2" class="page">
+  <div class="page-bg bg-game"></div>
+  <div class="page-content settle-content">
+    <h2 class="settle-title success">Level 2 通关！</h2>
+    <div class="deduction-card" id="settle2-deductions"></div>
+    <div class="card knowledge-card">
+      <h4>📖 知识小结</h4>
+      <p>DVT诊断路径：临床表现 → D-二聚体 → Wells评分 → 超声检查（CUS）→ 必要时静脉造影确诊。</p>
+    </div>
+    <button class="btn btn-primary" onclick="Game.goTo('page-level3')">进入最终关卡</button>
+  </div>
+</section>
+
+<!-- P8 - Level 3：绝地反击 -->
+<section id="page-level3" class="page">
+  <div class="page-bg bg-game"></div>
+  <div class="page-content level3-content">
+    <div class="status-bar">
+      <span class="level-title">Level 3：绝地反击</span>
+      <span class="status-right">
+        <span class="score-display">💠 <span id="l3-score">100</span>分</span>
+        <span class="timer-display">⏱ <span id="l3-timer">30</span>s</span>
+      </span>
+    </div>
+    <div class="scene-container scene-l3">
+      <img src="../assets/IL-03.png" alt="抢救室" class="scene-img">
+    </div>
+    <div class="narration-bar">
+      <p class="narration-text">紧急呼叫！张大爷突发呼吸困难，血氧降至85%，心率飙升至120次/分，胸痛剧烈——疑似急性肺栓塞（PE）！请在30秒内按正确顺序排列抢救措施。</p>
+    </div>
+    <!-- Drop slots -->
+    <div class="drop-zone" id="drop-zone">
+      <div class="drop-slot" data-slot="1"><span class="slot-num">①</span><span class="slot-content"></span></div>
+      <div class="drop-slot" data-slot="2"><span class="slot-num">②</span><span class="slot-content"></span></div>
+      <div class="drop-slot" data-slot="3"><span class="slot-num">③</span><span class="slot-content"></span></div>
+      <div class="drop-slot" data-slot="4"><span class="slot-num">④</span><span class="slot-content"></span></div>
+      <div class="drop-slot" data-slot="5"><span class="slot-num">⑤</span><span class="slot-content"></span></div>
+    </div>
+    <!-- Draggable items -->
+    <div class="drag-area" id="drag-area">
+      <!-- Items will be populated by JS -->
+    </div>
+    <!-- Feedback toast for Level 3 -->
+    <div class="toast l3-toast" id="l3-toast" style="display:none"></div>
+    <!-- Monitor display -->
+    <div class="monitor-feedback" id="monitor-feedback" style="display:none">
+      <p id="monitor-text"></p>
+    </div>
+  </div>
+</section>
+
+<!-- P9 - Level 3 结算页 -->
+<section id="page-settle3" class="page">
+  <div class="page-bg bg-game"></div>
+  <div class="page-content settle-content">
+    <h2 class="settle-title success">抢救成功！</h2>
+    <p class="settle-subtitle">张大爷病情稳定，转入ICU继续治疗。</p>
+    <div class="deduction-card" id="settle3-deductions"></div>
+    <div class="card knowledge-card">
+      <h4>📖 知识小结</h4>
+      <p>PE急救要点：及时呼叫上级 → 吸氧改善缺氧 → 体位管理 → 持续监测 → 尽快确诊（CTPA）。</p>
+    </div>
+    <button class="btn btn-primary" onclick="Game.showFinalResult()">查看最终成绩</button>
+  </div>
+</section>
+
+<!-- P10 - 通关结算页 -->
+<section id="page-final" class="page">
+  <div class="page-bg bg-celebrate"></div>
+  <div class="page-content settle-content">
+    <h2 class="final-congrats">恭喜通关！</h2>
+    <p class="final-name" id="final-name"></p>
+    <div class="final-score-box">
+      <span class="final-score" id="final-score"></span>
+      <span class="final-total">/ 100分</span>
+      <div class="final-grade" id="final-grade"></div>
+      <div class="final-title-text" id="final-title-text"></div>
+    </div>
+    <div class="card deduction-summary" id="final-summary"></div>
+    <div class="cert-preview" id="cert-preview" style="display:none">
+      <div class="cert-mini" id="cert-mini-icon"></div>
+      <span id="cert-preview-text"></span>
+    </div>
+    <div class="btn-group">
+      <button class="btn btn-primary" id="btn-view-cert" style="display:none" onclick="Game.goTo('page-cert')">查看证书</button>
+      <button class="btn btn-secondary" onclick="Game.restart()">重新挑战</button>
+      <button class="btn btn-secondary" onclick="Game.goTo('page-home')">返回主页</button>
+    </div>
+  </div>
+</section>
+
+<!-- P11 - 证书页 -->
+<section id="page-cert" class="page">
+  <div class="page-bg bg-game"></div>
+  <div class="page-content cert-content">
+    <div class="certificate" id="certificate">
+      <div class="cert-border" id="cert-border">
+        <div class="cert-top-deco">🏥</div>
+        <h3 class="cert-main-title" id="cert-title"></h3>
+        <p class="cert-sub">认证证书</p>
+        <div class="cert-body">
+          <p>恭喜 <strong id="cert-player"></strong> 完成</p>
+          <p>《血管卫士：生死时速》挑战</p>
+          <p>成绩：<strong id="cert-score-text"></strong>分　评级：<strong id="cert-grade-text"></strong></p>
+          <p class="cert-desc">你已掌握DVT识别、诊断与PE急救的核心知识。</p>
+        </div>
+        <div class="cert-footer">
+          <p class="cert-date" id="cert-date"></p>
+          <p class="cert-id" id="cert-id"></p>
+          <div class="cert-stamp">血管卫士<br>认证</div>
+        </div>
+      </div>
+    </div>
+    <div class="btn-group">
+      <button class="btn btn-primary" onclick="Game.saveCertificate()">保存证书</button>
+      <button class="btn btn-secondary" onclick="Game.restart()">重新挑战</button>
+      <button class="btn btn-secondary" onclick="Game.goTo('page-home')">返回主页</button>
+    </div>
+  </div>
+</section>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script src="game.js"></script>
+</body>
+</html>
